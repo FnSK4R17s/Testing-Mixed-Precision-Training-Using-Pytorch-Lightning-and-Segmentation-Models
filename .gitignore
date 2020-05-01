@@ -131,4 +131,4 @@ dmypy.json
 
 input/
 output/
-nbs/
+*.ipynb
