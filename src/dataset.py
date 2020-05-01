@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import cv2
 import torch
+import os
 
 import config
 
@@ -35,6 +36,7 @@ class CarvanaDataset:
 
     def __getitem__(self, item):
         img_name = self.image_ids[item]
+        img_name = os.path.splitext(os.path.basename(img_name))[0]
         image = cv2.imread(f'{config.TRAIN_PATH}/{img_name}.jpg')
         mask = cv2.imread(f'{config.MASK_PATH}/{img_name}_mask.gif', 0)
 
