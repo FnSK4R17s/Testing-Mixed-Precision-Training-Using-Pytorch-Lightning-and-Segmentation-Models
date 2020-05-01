@@ -1,7 +1,8 @@
 import albumentations as A
 import numpy as np
 import pandas as pd
-import cv2
+# import cv2
+from PIL import Image
 import torch
 
 import config
@@ -31,12 +32,12 @@ class CarvanaDataset:
         
 
     def __len__(self):
-        len(self.image_ids)
+        return len(self.image_ids)
 
     def __getitem__(self, item):
         img_name = self.image_ids[item]
-        image = cv2.imread(f'{config.TRAIN_PATH}/{img_name}.jpg')
-        mask = cv2.imread(f'{config.MASK_PATH}/{img_name}_mask.gif', 0)
+        image = np.array(Image.open(f'{config.TRAIN_PATH}/{img_name}.jpg'))
+        mask = np.array(Image.open(f'{config.MASK_PATH}/{img_name}_mask.gif'))
 
         augmented = self.aug(image=image, mask=mask)
 
@@ -47,7 +48,7 @@ class CarvanaDataset:
 
         return {
             'image': torch.tensor(image, dtype=torch.float),
-            'mask': torch.tensor(mask, dtype=torch.long)
+            'mask': torch.tensor(mask, dtype=torch.float)
         }
 
 
