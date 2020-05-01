@@ -9,6 +9,8 @@ import config
 class CarvanaDataset:
     def __init__(self, folds):
         df = pd.read_csv(config.TRAIN_CSV)
+        df = df[['img', 'kfolds']]
+        df = df[df.kfold.isin(folds)].reset_index(drop=True)
         self.image_ids = df.img.values
 
         if len(folds) == 1:
