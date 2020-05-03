@@ -2,6 +2,7 @@ import pytorch_lightning as pl
 import model_dispatcher
 import config
 from dataset import CarvanaDataset
+from dice_loss import IoULoss
 
 import torch
 import torch.nn as nn
@@ -11,7 +12,7 @@ from torch.utils.data import DataLoader
 
 class CarvanaModel(pl.LightningModule):
     def __init__(self, train_folds, val_folds):
-        super(CarvanaModel, self).__init__(train_folds, val_folds)
+        super(CarvanaModel, self).__init__()
         # import model from model dispatcher
         self.model = model_dispatcher.MODELS['smp_unet_resnet34']
         self.train_folds = train_folds
@@ -24,18 +25,20 @@ class CarvanaModel(pl.LightningModule):
     def training_step(self, batch, batch_nb):
         # REQUIRED
 
-        # -----------------------------------------------------------------------------------------------------------------------------------
-        x, y = batch
+        x = batch['image']
+        y = batch['mask']
+        # print(batch)
         y_hat = self(x)
-        loss = F.cross_entropy(y_hat, y)
+        loss = IoULoss()(y_hat, y)
         tensorboard_logs = {'train_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
         # OPTIONAL
-        x, y = batch
+        x = batch['image']
+        y = batch['mask']
         y_hat = self(x)
-        return {'val_loss': F.cross_entropy(y_hat, y)}
+        return {'val_loss': IoULoss()(y_hat, y)}
 
     def validation_epoch_end(self, outputs):
         # OPTIONAL
@@ -43,24 +46,23 @@ class CarvanaModel(pl.LightningModule):
         tensorboard_logs = {'val_loss': avg_loss}
         return {'val_loss': avg_loss, 'log': tensorboard_logs}
 
-    def test_step(self, batch, batch_nb):
-        # OPTIONAL
-        x, y = batch
-        y_hat = self(x)
-        return {'test_loss': F.cross_entropy(y_hat, y)}
+    # def test_step(self, batch, batch_nb):
+    #     # OPTIONAL
+    #     x, y = batch
+    #     y_hat = self(x)
+    #     return {'test_loss': F.cross_entropy(y_hat, y)}
 
-    def test_epoch_end(self, outputs):
-        # OPTIONAL
-        avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
-        logs = {'test_loss': avg_loss}
-        return {'test_loss': avg_loss, 'log': logs, 'progress_bar': logs}
+    # def test_epoch_end(self, outputs):
+    #     # OPTIONAL
+    #     avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
+    #     logs = {'test_loss': avg_loss}
+    #     return {'test_loss': avg_loss, 'log': logs, 'progress_bar': logs}
 
     def configure_optimizers(self):
         # REQUIRED
         # can return multiple optimizers and learning_rate schedulers
         # (LBFGS it is automatically supported, no need for closure function)
         return torch.optim.Adam(self.parameters(), lr=0.02)
-        #---------------------------------------------------------------------------------------------------------------------------------------
 
 
     def train_dataloader(self):

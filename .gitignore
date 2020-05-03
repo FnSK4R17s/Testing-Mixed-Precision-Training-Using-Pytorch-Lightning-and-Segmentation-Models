@@ -134,3 +134,4 @@ output/
 *.csv
 
 .vscode/
+lightning_logs/
