@@ -22,3 +22,10 @@ TRAIN_FOLDS = f'{OUTPUT}/train_folds.csv'
 
 TRAIN_BATCH_SIZE = 4
 VAL_BATCH_SIZE = 4
+
+
+logs_path = 'lightning_logs'
+version = 'version_7'
+ckpt_name = 'epoch=4'
+
+PATH = f'{logs_path}/{version}/checkpoints/{ckpt_name}.ckpt'
