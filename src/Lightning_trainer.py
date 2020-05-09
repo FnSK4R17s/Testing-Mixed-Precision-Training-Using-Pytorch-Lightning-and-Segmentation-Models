@@ -16,6 +16,8 @@ def train_iterative(train_folds, val_folds):
 
 if __name__ == "__main__":
 
+    # training five models, one for each validation set
+
     train_iterative([4, 1, 2, 3],[0]) # 02:00:00
     train_iterative([0, 4, 2, 3],[1]) # 04:00:00
     train_iterative([0, 1, 4, 3],[2]) # 06:00:00
