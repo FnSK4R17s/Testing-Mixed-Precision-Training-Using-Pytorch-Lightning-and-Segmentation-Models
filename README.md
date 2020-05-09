@@ -2,8 +2,12 @@
 
 <div align="center">
  
+![header](pics/header.png)
+
+**Testing Mixed Precision Training Using [PyTorch Lightning](https://github.com/PytorchLightning/pytorch-lightning) and [Segmentation Models PyTorch](https://github.com/qubvel/segmentation_models.pytorch)**
+
+
 ![logo](pics/banner.png)  
-**Testing Mixed Precision Training Using [PyTorch Lightning](https://github.com/PytorchLightning/pytorch-lightning) and [Segmentation Models PyTorch](https://github.com/qubvel/segmentation_models.pytorch)**  
 
 </div>
 
