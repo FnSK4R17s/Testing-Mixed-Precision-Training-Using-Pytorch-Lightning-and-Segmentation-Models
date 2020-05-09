@@ -1,0 +1,16 @@
+albumentations==0.4.5
+apex==0.1
+joblib==0.14.1
+matplotlib==3.2.1
+numpy==1.18.1
+opencv-python-headless==4.2.0.34
+pandas==1.0.3
+Pillow==6.2.2
+pretrainedmodels==0.7.4
+pytorch-lightning==0.7.5
+segmentation-models-pytorch==0.1.0
+sklearn==0.0
+tensorboard==2.2.1
+torch==1.5.0
+torchvision==0.6.0
+tqdm==4.45.0
