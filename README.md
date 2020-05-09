@@ -1,5 +1,12 @@
 # Testing Mixed Precision Training Using Pytorch Lightning and Segmentation Models
 
+<div align="center">
+ 
+![logo](https://i.ibb.co/dc1XdhT/Segmentation-Models-V2-Side-1-1.png)  
+**Testing Mixed Precision Training Using [PyTorch Lightning](https://github.com/PytorchLightning/pytorch-lightning) and [Segmentation Models PyTorch](https://github.com/qubvel/segmentation_models.pytorch)**  
+
+</div>
+
 Segmentation tasks are becoming easier day by day especially due to th rise in number of open source pachages like [Segmentation Models PyTorch](https://github.com/qubvel/segmentation_models.pytorch) . Similarly with the advent of mixed precision training, even beginners can train state of the art models on their PCs. In this project I have tried to experiment with fp16 training with the help of [PyTorch Lightning](https://github.com/PytorchLightning/pytorch-lightning) framework.
 
 Pytorch lightning is a lightweight wrapper over pytorch and is used by researchers worldwide to speed up their Deep Learning experiments. You can use this project to set up your image segmentation project easily. The project structure is similar to the directory structure used in kaggle competitions so it will be easier to convert this project into a kaggle kernel.
