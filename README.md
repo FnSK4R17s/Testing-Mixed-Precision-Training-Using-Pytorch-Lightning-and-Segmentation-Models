@@ -20,8 +20,18 @@ Segmentation based on PyTorch)
 # In a Nutshell   
 In a nutshell here's how to train your own segmentation model with [PyTorch Lightning](https://github.com/PytorchLightning/pytorch-lightning) and [Segmentation Models PyTorch](https://github.com/qubvel/segmentation_models.pytorch) , so **for example** assume you want to implement ResNet-34 to compete in [Carvana Image Masking Challenge](https://www.kaggle.com/c/carvana-image-masking-challenge/overview), so you should do the following:
 
+- Create `/input` folder and place your dataset in it, edit `config.py` such that train and test paths point to their respective folders
 
-- In `config.py`  folder change the value of `MODEL_NAME` to the name of model that you wish to use, here we have used `smp_unet_resnet34` .
+```python
+INPUT = 'input'
+OUTPUT = 'output'
+
+TRAIN_PATH = f'{INPUT}/train_hq'
+MASK_PATH = f'{INPUT}/train_masks'
+TEST_PATH = f'{INPUT}/test_hq'
+```
+
+- In `config.py`  file change the value of `MODEL_NAME` to the name of model that you wish to use, here we have used `smp_unet_resnet34` .
 
 ```python
 MODEL_NAME = 'smp_unet_resnet34'
@@ -35,7 +45,7 @@ MODELS = {
 }
 ```
 
-- In `dataset.py`  folder create a `Dataset Object` like this
+- In `dataset.py` file create a `Dataset Object` like this
 
 ```python
 class CarvanaDataset:
@@ -85,7 +95,7 @@ class CarvanaDataset:
 
 ```
 
-- Now, run `folds.py` to create folds for training and validation. You can text your dataset using `test_dataset.py`.
+- Now, run `folds.py` to create folds for training and validation. You can test your dataset using `test_dataset.py`.
 
 
 - Now we can build our `Lightning Module` :- 
