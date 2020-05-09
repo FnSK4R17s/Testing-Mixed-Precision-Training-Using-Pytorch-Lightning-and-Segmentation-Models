@@ -2,7 +2,7 @@
 
 <div align="center">
  
-![logo](https://i.ibb.co/dc1XdhT/Segmentation-Models-V2-Side-1-1.png)  
+![logo](https://github.com/FnSK4R17s/Testing-Mixed-Precision-Training-Using-Pytorch-Lightning-and-Segmentation-Models/blob/master/pics/banner.png)  
 **Testing Mixed Precision Training Using [PyTorch Lightning](https://github.com/PytorchLightning/pytorch-lightning) and [Segmentation Models PyTorch](https://github.com/qubvel/segmentation_models.pytorch)**  
 
 </div>
