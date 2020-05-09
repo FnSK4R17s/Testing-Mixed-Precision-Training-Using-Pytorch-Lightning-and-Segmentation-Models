@@ -1,8 +1,14 @@
 CROP_SIZE = 1024
 CHANNELS = 3
-CLASSES = 2
+CLASSES = 1
+
+EPOCHS = 7
+
+LR = 0.001
 
 INPUT_SHAPE = (CHANNELS, CROP_SIZE, CROP_SIZE)
+
+MODEL_NAME = 'smp_unet_resnet34'
 
 
 INPUT = 'input'

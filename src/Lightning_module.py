@@ -14,7 +14,7 @@ class CarvanaModel(pl.LightningModule):
     def __init__(self, train_folds, val_folds):
         super(CarvanaModel, self).__init__()
         # import model from model dispatcher
-        self.model = model_dispatcher.MODELS['smp_unet_resnet34']
+        self.model = model_dispatcher.MODELS[config.MODEL_NAME]
         self.train_folds = train_folds
         self.val_folds = val_folds
 
@@ -62,7 +62,7 @@ class CarvanaModel(pl.LightningModule):
         # REQUIRED
         # can return multiple optimizers and learning_rate schedulers
         # (LBFGS it is automatically supported, no need for closure function)
-        return torch.optim.Adam(self.parameters(), lr=0.001)
+        return torch.optim.Adam(self.parameters(), lr=config.LR)
 
 
     def train_dataloader(self):

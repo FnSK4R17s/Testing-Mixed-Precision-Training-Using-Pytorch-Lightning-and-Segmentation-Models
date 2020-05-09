@@ -2,15 +2,6 @@
 
 Based on Unet architecture
 
-# ------------------------------------------------------
-
-A simple and well designed structure is essential for any Deep Learning project, so after a lot practice and contributing in pytorch projects here's a pytorch project template that combines **simplicity, best practice for folder structure** and **good OOP design**. 
-The main idea is that there's much same stuff you do every time when you start your pytorch project, so wrapping all this shared stuff will help you to change just the core idea every time you start a new pytorch project. 
-
-**So, here’s a simple pytorch template that help you get into your main project faster and just focus on your core (Model Architecture, Training Flow, etc)**
-
-In order to decrease repeated stuff, we recommend to use a high-level library. You can write your own high-level library or you can just use some third-part libraries such as [ignite](https://github.com/pytorch/ignite), [fastai](https://github.com/fastai/fastai), [mmcv](https://github.com/open-mmlab/mmcv) … etc. This can help you write compact but full-featured training loops in a few lines of code. Here we use ignite to train mnist as an example.
-
 # Requirements
 - [PyTorch](https://pytorch.org/) (An open source deep learning platform)
 - [PyTorch Lightning](https://github.com/PytorchLightning/pytorch-lightning) (A lightweight PyTorch wrapper for ML researchers)
@@ -19,118 +10,186 @@ Segmentation based on PyTorch)
 
 # Table Of Contents
 -  [In a Nutshell](#in-a-nutshell)
--  [In Details](#in-details)
+-  [Project Structure](#project-structure)
 -  [Future Work](#future-work)
 -  [Contributing](#contributing)
 -  [Acknowledgments](#acknowledgments)
 
 # In a Nutshell   
-In a nutshell here's how to use this template, so **for example** assume you want to implement ResNet-18 to train mnist, so you should do the following:
-- In `modeling`  folder create a python file named whatever you like, here we named it `example_model.py` . In `modeling/__init__.py` file, you can build a function named `build_model` to call your model
+In a nutshell here's how to train your own segmentation model with [PyTorch Lightning](https://github.com/PytorchLightning/pytorch-lightning) and [Segmentation Models PyTorch](https://github.com/qubvel/segmentation_models.pytorch) , so **for example** assume you want to implement ResNet-34 to compete in [Carvana Image Masking Challenge](https://www.kaggle.com/c/carvana-image-masking-challenge/overview), so you should do the following:
+
+
+- In `config.py`  folder change the value of `MODEL_NAME` to the name of model that you wish to use, here we have used `smp_unet_resnet34` .
 
 ```python
-from .example_model import ResNet18
-
-def build_model(cfg):
-    model = ResNet18(cfg.MODEL.NUM_CLASSES)
-    return model
+MODEL_NAME = 'smp_unet_resnet34'
 ``` 
+- In `model_dispatcher.py` file, you can build a dictionary named `build_model` to define your model using [Segmentation Models PyTorch](https://github.com/qubvel/segmentation_models.pytorch) library
+```python
+import segmentation_models_pytorch as smp
 
-   
-- In `engine`  folder create a model trainer function and inference function. In trainer function, you need to write the logic of the training process, you can use some third-party library to decrease the repeated stuff.
+MODELS = {
+    'smp_unet_resnet34' : smp.Unet('resnet34', encoder_weights='imagenet', classes=config.CLASSES, activation='softmax'),
+}
+```
+
+- In `dataset.py`  folder create a `Dataset Object` like this
 
 ```python
-# trainer
-def do_train(cfg, model, train_loader, val_loader, optimizer, scheduler, loss_fn):
- """
- implement the logic of epoch:
- -loop on the number of iterations in the config and call the train step
- -add any summaries you want using the summary
- """
-pass
+class CarvanaDataset:
+    def __init__(self, folds):
+        df = pd.read_csv(config.TRAIN_FOLDS)
+        df = df[['img', 'kfold']]
+        df = df[df.kfold.isin(folds)].reset_index(drop=True)
+        self.image_ids = df.img.values
 
-# inference
-def inference(cfg, model, val_loader):
-"""
-implement the logic of the train step
-- run the tensorflow session
-- return any metrics you need to summarize
- """
-pass
+        if len(folds) == 1:
+            self.aug = A.Compose([
+                A.Resize(config.CROP_SIZE, config.CROP_SIZE, always_apply=True),
+                A.Normalize(config.MODEL_MEAN, config.MODEL_STD, always_apply=True)
+            ])
+        else:
+            self.aug = A.Compose([
+                A.Resize(config.CROP_SIZE, config.CROP_SIZE, always_apply=True),
+                A.ShiftScaleRotate(
+                    shift_limit=0.0625,
+                    scale_limit=0.1,
+                    rotate_limit=15,
+                    p=0.9),
+                A.Normalize(config.MODEL_MEAN, config.MODEL_STD, always_apply=True)
+            ])
+        
+
+    def __len__(self):
+        return len(self.image_ids)
+
+    def __getitem__(self, item):
+        img_name = self.image_ids[item]
+        image = np.array(Image.open(f'{config.TRAIN_PATH}/{img_name}.jpg'))
+        mask = np.array(Image.open(f'{config.MASK_PATH}/{img_name}_mask.gif'))
+
+        augmented = self.aug(image=image, mask=mask)
+
+        image = augmented['image']
+        mask = augmented['mask']
+
+        image = np.transpose(image, (2, 0, 1)).astype(np.float32)
+
+        return {
+            'image': torch.tensor(image, dtype=torch.float),
+            'mask': torch.tensor(mask, dtype=torch.float)
+        }
+
+
 ```
 
-- In `tools`  folder, you create the `train.py` .  In this file, you need to get the instances of the following objects "Model",  "DataLoader”, “Optimizer”, and config
+- Now, run `folds.py` to create folds for training and validation. You can text your dataset using `test_dataset.py`.
+
+
+- Now we can build our `Lightning Module` :- 
 ```python
-# create instance of the model you want
-model = build_model(cfg)
+import pytorch_lightning as pl
+import model_dispatcher
+import config
+from dataset import CarvanaDataset
 
-# create your data generator
-train_loader = make_data_loader(cfg, is_train=True)
-val_loader = make_data_loader(cfg, is_train=False)
+class CarvanaModel(pl.LightningModule):
+    def __init__(self, train_folds, val_folds):
+        super(CarvanaModel, self).__init__()
+        # import model from model dispatcher
+        self.model = model_dispatcher.MODELS[config.MODEL_NAME]
+        self.train_folds = train_folds
+        self.val_folds = val_folds
 
-# create your model optimizer
-optimizer = make_optimizer(cfg, model)
+    def forward(self, x):
+        return self.model(x)
+
+    def training_step(self, batch, batch_nb):
+        # REQUIRED
+
+        x = batch['image']
+        y = batch['mask']
+        y_hat = self(x)
+        loss = IoULoss()(y_hat, y)
+        tensorboard_logs = {'train_loss': loss}
+        return {'loss': loss, 'log': tensorboard_logs}
+
+    def validation_step(self, batch, batch_nb):
+        # OPTIONAL
+        x = batch['image']
+        y = batch['mask']
+        y_hat = self(x)
+        return {'val_loss': IoULoss()(y_hat, y)}
+
+    def validation_epoch_end(self, outputs):
+        # OPTIONAL
+        avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
+        tensorboard_logs = {'val_loss': avg_loss}
+        return {'val_loss': avg_loss, 'log': tensorboard_logs}
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=config.LR)
+
+
+    def train_dataloader(self):
+        # REQUIRED
+        return DataLoader(CarvanaDataset(folds=self.train_folds), shuffle=True, batch_size=config.TRAIN_BATCH_SIZE)
+
+    def val_dataloader(self):
+        # OPTIONAL
+        return DataLoader(CarvanaDataset(folds=self.val_folds), batch_size=config.VAL_BATCH_SIZE)
 ```
 
-- Pass the all these objects to the function `do_train` , and start your training
+- Now we can train our model using the `Lightning_trainer.py` script
+
 ```python
-# here you train your model
-do_train(cfg, model, train_loader, val_loader, optimizer, None, F.cross_entropy)
+carvana_model = CarvanaModel(train_folds, val_folds)
+
+# most basic trainer, uses good defaults (1 gpu)
+trainer = pl.Trainer(gpus=1, accumulate_grad_batches=64, amp_level='O1', precision=16, profiler=True, max_epochs=config.EPOCHS)
+trainer.fit(carvana_model)
+
 ```
 
-**You will find a template file and a simple example in the model and trainer folder that shows you how to try your first model simply.**
+**Note: We have used amp to perform Mixed Precision Training using NVIDIA APEX library**
 
 
-# In Details
+# Project Structure
 ```
-├──  config
-│    └── defaults.py  - here's the default config file.
+├──  input
+│    ├── test_hq  - here's the folder containing test images.
+│    ├── train_hq  - here's the folder containing train images.
+│    └── train_masks  - here's the folder containing train masks.
 │
 │
-├──  configs  
-│    └── train_mnist_softmax.yml  - here's the specific config file for specific model or dataset.
+├──  loghtning_logs  
+│    └── version_#  - training checkpoints are saved here.
 │ 
 │
-├──  data  
-│    └── datasets  - here's the datasets folder that is responsible for all data handling.
-│    └── transforms  - here's the data preprocess folder that is responsible for all data augmentation.
-│    └── build.py  		   - here's the file to make dataloader.
-│    └── collate_batch.py   - here's the file that is responsible for merges a list of samples to form a mini-batch.
+├──  output  
+│    └── train_folds.py  - this file is generated when we run folds.py.
+│    
 │
-│
-├──  engine
-│   ├── trainer.py     - this file contains the train loops.
-│   └── inference.py   - this file contains the inference process.
-│
-│
-├── layers              - this folder contains any customed layers of your project.
-│   └── conv_layer.py
-│
-│
-├── modeling            - this folder contains any model of your project.
-│   └── example_model.py
-│
-│
-├── solver             - this folder contains optimizer of your project.
-│   └── build.py
-│   └── lr_scheduler.py
-│   
-│ 
-├──  tools                - here's the train/test model of your project.
-│    └── train_net.py  - here's an example of train model that is responsible for the whole pipeline.
-│ 
-│ 
-└── utils
-│    ├── logger.py
-│    └── any_other_utils_you_need
-│ 
-│ 
-└── tests					- this foler contains unit test of your project.
-     ├── test_data_sampler.py
+└──  src
+    ├── config.py     - this file contains all the hyperparameters for the project.
+    ├── dataset.py     - this file contains dataset object.
+    ├── decoders.py     - redundant file will be used in future.
+    ├── dice_loss.py     - this file defines various losses which can be used to train the model.
+    ├── encoders.py     - redundant file will be used in future.
+    ├── folds.py     - this file created folds for cross validation.
+    ├── Lightning_module.py     - this file contains the Lightinig Module.
+    ├── Lightning_tester.py     - this file is used to evaluate the trained model.
+    ├── model_dispatcher.py     - this file contains model definitions.
+    ├── ND_Crossentropy.py     - helper function for loss function.
+    ├── test_dataset.py     - this file contains the train loops.
+    └── test_model.py   - this file contains the inference process.
+
 ```
 
 
 # Future Work
+- Write Unetify script using encoder.py and decoder.py
+- Add Augmentations to the dataset to make the model more robust
 
 # Contributing
 Any kind of enhancement or contribution is welcomed.
