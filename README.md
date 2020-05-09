@@ -185,7 +185,7 @@ trainer.fit(carvana_model)
 │    └── train_masks  - here's the folder containing train masks.
 │
 │
-├──  loghtning_logs  
+├──  lightning_logs  
 │    └── version_#  - training checkpoints are saved here.
 │ 
 │
