@@ -201,6 +201,7 @@ trainer.fit(carvana_model)
     ├── encoders.py     - redundant file will be used in future.
     ├── folds.py     - this file created folds for cross validation.
     ├── Lightning_module.py     - this file contains the Lightinig Module.
+    ├── Lightning_trainer.py     - run this file to train the model.
     ├── Lightning_tester.py     - this file is used to evaluate the trained model.
     ├── model_dispatcher.py     - this file contains model definitions.
     ├── ND_Crossentropy.py     - helper function for loss function.
@@ -213,6 +214,7 @@ trainer.fit(carvana_model)
 # Future Work
 - Write Unetify script using encoder.py and decoder.py
 - Add Augmentations to the dataset to make the model more robust
+- Add Hydra support
 
 # Contributing
 Any kind of enhancement or contribution is welcomed.
