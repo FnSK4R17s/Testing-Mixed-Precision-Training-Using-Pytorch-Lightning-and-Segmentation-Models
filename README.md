@@ -222,7 +222,7 @@ Any kind of enhancement or contribution is welcomed.
 
 # Acknowledgments
 
-- [SegLoss](https://github.com/JunMa11/SegLoss) used loss functions from this repo
+- Loss functions were taken from this repo [SegLoss](https://github.com/JunMa11/SegLoss)
 
 
 
