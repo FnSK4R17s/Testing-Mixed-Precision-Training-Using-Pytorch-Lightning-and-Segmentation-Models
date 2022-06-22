@@ -2,7 +2,7 @@ albumentations==0.4.5
 apex==0.1
 joblib==0.14.1
 matplotlib==3.2.1
-numpy==1.18.1
+numpy==1.22.0
 opencv-python-headless==4.2.0.34
 pandas==1.0.3
 Pillow==8.3.2
