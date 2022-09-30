@@ -1,6 +1,6 @@
 albumentations==0.4.5
 apex==0.1
-joblib==0.14.1
+joblib==1.2.0
 matplotlib==3.2.1
 numpy==1.18.1
 opencv-python-headless==4.2.0.34
