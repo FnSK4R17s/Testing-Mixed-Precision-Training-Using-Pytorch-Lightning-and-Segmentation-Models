@@ -7,7 +7,7 @@ opencv-python-headless==4.2.0.34
 pandas==1.0.3
 Pillow==8.3.2
 pretrainedmodels==0.7.4
-pytorch-lightning==0.7.5
+pytorch-lightning==1.6.0
 segmentation-models-pytorch==0.1.0
 sklearn==0.0
 tensorboard==2.2.1
